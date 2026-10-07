@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หมูเนย - รับหิ้วสไตล์</title>
+    <!-- โหลด Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- โหลด Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- ฟอนต์ Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #fff5f8; }
+        .hidden { display: none; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #ffe4ef; }
+        ::-webkit-scrollbar-thumb { background: #f9a8d4; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f472b6; }
+        /* สไตล์สำหรับดาวรีวิว */
+        .star-rating i { cursor: pointer; color: #cbd5e1; transition: color 0.2s; }
+        .star-rating i.active { color: #fbbf24; }
+        .star-rating i:hover, .star-rating i:hover ~ i { color: #fbbf24; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="bg-pink-300 text-white p-3 shadow-sm sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                🐷 หมูเนย <span class="text-sm font-normal bg-pink-400 px-2 py-0.5 rounded-full">รับหิ้วสไตล์</span>
+            </h1>
+            <div id="authSection" class="flex gap-4 items-center">
+                <button onclick="document.getElementById('loginModal').classList.remove('hidden')" class="bg-white text-pink-500 px-5 py-1.5 rounded-full font-semibold hover:bg-pink-50 shadow-sm transition-all">เข้าสู่ระบบ</button>
+            </div>
+            <div id="userSection" class="hidden flex items-center gap-4">
+                <span id="welcomeText" class="font-medium text-pink-900 bg-pink-200 px-3 py-1 rounded-full text-sm"></span>
+                <button onclick="document.getElementById('postModal').classList.remove('hidden')" class="bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 px-4 py-1.5 rounded-full font-semibold shadow-sm transition-all text-sm border border-yellow-300">✨ ตั้งกระทู้หิ้วของ</button>
+                <button onclick="logout()" class="text-sm underline hover:text-pink-100">ออกจากระบบ</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto p-4 mt-6">
+        <div class="flex justify-between items-center mb-4 px-2">
+            <h2 class="text-xl font-bold text-gray-700">✨ กระทู้รับหิ้วล่าสุดทั้งหมด</h2>
+            <button onclick="fetchPosts()" class="text-pink-400 hover:text-pink-600 text-sm bg-white px-3 py-1 rounded-full shadow-sm border border-pink-100"><i class="fa-solid fa-rotate"></i> รีเฟรช</button>
+        </div>
+        <div id="feedContainer" class="space-y-6">
+            <p class="text-center text-pink-400 py-10"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br>กำลังโหลดข้อมูลน่ารักๆ...</p>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- ล็อกอิน -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-pink-900 bg-opacity-30 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-xl border border-pink-100 relative">
+            <button onclick="document.getElementById('loginModal').classList.add('hidden')" class="absolute top-4 right-5 text-gray-400 hover:text-pink-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="text-center mb-6"><h3 class="text-2xl font-bold text-gray-800 mb-1">💖 ยินดีต้อนรับสู่ หมูเนย</h3></div>
+            <div class="space-y-4">
+                <input type="text" id="username" placeholder="ชื่อผู้ใช้งาน (Username)" class="w-full p-3 bg-blue-50 border border-blue-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300">
+                <input type="password" id="password" placeholder="รหัสผ่าน (Password)" class="w-full p-3 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300">
+                <div id="displayNameContainer" class="hidden"><input type="text" id="displayName" placeholder="ชื่อที่แสดง (สำหรับสมัครใหม่)" class="w-full p-3 border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300"></div>
+                <div class="pt-2">
+                    <button onclick="handleAuth('login')" class="w-full bg-pink-200 text-pink-800 font-bold py-3 rounded-xl hover:bg-pink-300 mb-2">เข้าสู่ระบบ</button>
+                    <button onclick="toggleRegister()" id="toggleRegBtn" class="w-full text-sm text-pink-500 hover:underline">ยังไม่มีบัญชี? สมัครสมาชิก</button>
+                    <button onclick="handleAuth('register')" id="doRegBtn" class="hidden w-full bg-blue-100 text-blue-700 font-bold py-3 rounded-xl">ยืนยันการสมัครสมาชิก</button>
+                </div>
+            </div>
+            <p id="authMessage" class="text-red-500 text-sm mt-4 text-center font-medium"></p>
+        </div>
+    </div>
+
+    <!-- โพสต์ -->
+    <div id="postModal" class="hidden fixed inset-0 bg-pink-900 bg-opacity-30 flex items-center justify-center p-4 z-50 backdrop-blur-sm overflow-y-auto">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-xl border border-pink-100 my-8 relative">
+            <button onclick="document.getElementById('postModal').classList.add('hidden')" class="absolute top-6 right-6 text-gray-400 hover:text-pink-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">📝 สร้างกระทู้ฝากหิ้วของ</h3>
+            <div class="space-y-5">
+                <input type="text" id="postDetail" placeholder="หัวข้อกระทู้ เช่น ชาไข่มุก 2 แก้ว" class="w-full p-3 border border-pink-200 rounded-xl">
+                <div class="flex gap-4">
+                    <input type="text" id="postStart" placeholder="📍 สถานที่ซื้อของ (ต้นทาง)" class="w-1/2 p-3 border border-pink-200 rounded-xl">
+                    <input type="text" id="postEnd" placeholder="🏠 สถานที่ส่งของ (ปลายทาง)" class="w-1/2 p-3 border border-pink-200 rounded-xl">
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700 mb-1">ระยะทาง/น้ำหนัก</label><input type="number" id="postWeight" value="1" step="0.1" class="w-full p-3 border border-pink-200 rounded-xl" oninput="calculateTotal()"></div>
+                    <div class="w-1/2"><label class="block text-sm font-bold text-gray-700 mb-1">ค่าหิ้วพื้นฐาน (บาท)</label><input type="number" id="postPriceRate" value="30" class="w-full p-3 border border-pink-200 rounded-xl" oninput="calculateTotal()"></div>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100 flex items-center justify-between">
+                    <span class="text-sm text-gray-700">เรตค่าส่ง: <span id="calcText">1 x 30</span></span>
+                    <div class="font-bold text-lg">รวมค่าส่งสุทธิ: <input type="text" id="postTotal" value="30" readonly class="bg-transparent w-16 text-pink-600 font-bold outline-none text-right"> บาท</div>
+                </div>
+                <input type="file" id="postImage" accept="image/*" class="w-full p-2 border border-pink-200 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-pink-50 file:text-pink-700">
+                <button id="submitPostBtn" onclick="submitPost()" class="w-full bg-pink-300 text-white py-3 rounded-xl font-bold hover:bg-pink-400">โพสต์เลย</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- คอมเมนต์ -->
+    <div id="commentModal" class="hidden fixed inset-0 bg-pink-900 bg-opacity-30 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-xl border border-pink-100 relative">
+            <button onclick="closeCommentModal()" class="absolute top-4 right-5 text-gray-400 hover:text-pink-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-xl font-bold text-gray-800 mb-4">💬 ตอบกลับกระทู้นี้</h3>
+            <input type="hidden" id="replyPostId">
+            <textarea id="replyMessage" rows="3" placeholder="พิมพ์ข้อความตอบกลับ เช่น 'รับคิวครับ'" class="w-full p-3 border border-pink-200 rounded-xl mb-3"></textarea>
+            <div class="flex items-center gap-2 mb-4">
+                <input type="checkbox" id="acceptJobCheck" class="w-5 h-5 text-pink-600 rounded">
+                <label for="acceptJobCheck" class="text-sm font-bold text-pink-600">รับคิวกระทู้นี้! (รับงาน)</label>
+            </div>
+            <button id="submitCommentBtn" onclick="submitComment()" class="w-full bg-pink-300 text-white font-bold py-3 rounded-xl hover:bg-pink-400">ส่งข้อความตอบกลับ</button>
+        </div>
+    </div>
+
+    <!-- รีวิว -->
+    <div id="reviewModal" class="hidden fixed inset-0 bg-pink-900 bg-opacity-30 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-xl border border-pink-100 relative text-center">
+            <button onclick="closeReviewModal()" class="absolute top-4 right-5 text-gray-400 hover:text-pink-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">⭐ รีวิวคนรับหิ้ว</h3>
+            <p class="text-sm text-gray-500 mb-4">บริการของคนรับหิ้วเป็นยังไงบ้างให้คะแนนกันเลย!</p>
+            
+            <input type="hidden" id="reviewPostId">
+            <input type="hidden" id="reviewRatingScore" value="5">
+            
+            <!-- ระบบเลือกดาว -->
+            <div class="star-rating text-4xl mb-4 flex justify-center gap-2 flex-row-reverse" id="starSelector">
+                <i class="fa-solid fa-star active" data-val="5" onclick="setRating(5)"></i>
+                <i class="fa-solid fa-star active" data-val="4" onclick="setRating(4)"></i>
+                <i class="fa-solid fa-star active" data-val="3" onclick="setRating(3)"></i>
+                <i class="fa-solid fa-star active" data-val="2" onclick="setRating(2)"></i>
+                <i class="fa-solid fa-star active" data-val="1" onclick="setRating(1)"></i>
+            </div>
+            
+            <textarea id="reviewMessage" rows="3" placeholder="เขียนรีวิวความประทับใจ หรือติชมได้เลยค่ะ" class="w-full p-3 border border-pink-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-pink-300"></textarea>
+            
+            <button id="submitReviewBtn" onclick="submitReview()" class="w-full bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900 font-bold py-3 rounded-xl hover:opacity-90 shadow-sm">ส่งรีวิว</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ใส่ URL ของ Google Apps Script ที่เพิ่ง Deploy ใหม่ตรงนี้ !!
+        // ==========================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwi2pb0GxYVan_BetCtXHRYE95AyAe7ltmOn6bY2H5Y9RbRlXnHDuXXrEKv3ShPpx1X_g/exec';
+
+        let currentUser = localStorage.getItem('displayName');
+        if (currentUser) showLoggedInState();
+        fetchPosts();
+
+        // --- ระบบ Auth ---
+        let isLoginMode = true;
+        function toggleRegister() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('displayNameContainer').classList.toggle('hidden', isLoginMode);
+            document.getElementById('toggleRegBtn').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
+            document.getElementById('doRegBtn').classList.toggle('hidden', isLoginMode);
+            document.querySelector("button[onclick=\"handleAuth('login')\"]").classList.toggle('hidden', !isLoginMode);
+        }
+
+        function showLoggedInState() {
+            document.getElementById('authSection').classList.add('hidden');
+            document.getElementById('userSection').classList.remove('hidden');
+            document.getElementById('welcomeText').innerHTML = `สวัสดีค่ะ, <b>${currentUser}</b>`;
+            document.getElementById('loginModal').classList.add('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('displayName'); localStorage.removeItem('username');
+            currentUser = null;
+            document.getElementById('authSection').classList.remove('hidden'); document.getElementById('userSection').classList.add('hidden');
+            fetchPosts(); // รีเฟรชหน้าเพื่ออัปเดตปุ่มลบโพสต์
+        }
+
+        async function handleAuth(action) {
+            const user = document.getElementById('username').value, pass = document.getElementById('password').value, display = document.getElementById('displayName').value, msg = document.getElementById('authMessage');
+            if (!user || !pass) return msg.innerText = "กรอกข้อมูลให้ครบนะคะ";
+            msg.innerText = "กำลังดำเนินการ...";
+            try {
+                let res = await fetch(SCRIPT_URL, { redirect: "follow", method: 'POST', body: JSON.stringify({ action: action, username: user, password: pass, displayName: display }) });
+                let result = await res.json();
+                if (result.success) {
+                    if (action === 'login') { localStorage.setItem('displayName', result.displayName); localStorage.setItem('username', result.username); currentUser = result.displayName; showLoggedInState(); document.getElementById('loginModal').classList.add('hidden'); fetchPosts(); }
+                    else { msg.innerText = "สมัครสำเร็จ! สลับไปเข้าสู่ระบบได้เลย"; msg.className="text-green-500 text-sm mt-4"; }
+                } else msg.innerText = result.message;
+            } catch (e) { msg.innerText = "เกิดข้อผิดพลาดในการเชื่อมต่อค่ะ"; }
+        }
+
+        // --- ระบบสร้างโพสต์ ---
+        function calculateTotal() {
+            let weight = parseFloat(document.getElementById('postWeight').value)||0, rate = parseFloat(document.getElementById('postPriceRate').value)||0;
+            document.getElementById('calcText').innerText = `${weight} x ${rate}`; document.getElementById('postTotal').value = (weight * rate).toFixed(2);
+        }
+
+        function resizeImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let maxWidth = 400, maxHeight = 400; 
+                        let width = img.width, height = img.height;
+                        if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } 
+                        else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.4)); 
+                    };
+                    img.onerror = reject;
+                };
+                reader.onerror = reject;
+            });
+        }
+
+        async function submitPost() {
+            const detail = document.getElementById('postDetail').value, start = document.getElementById('postStart').value, end = document.getElementById('postEnd').value, w = document.getElementById('postWeight').value, r = document.getElementById('postPriceRate').value, t = document.getElementById('postTotal').value, fileInput = document.getElementById('postImage'), btn = document.getElementById('submitPostBtn');
+            if (!detail || !start || !end) return alert("กรุณากรอกให้ครบถ้วนนะคะ");
+            btn.innerText = "กำลังอัปโหลด..."; btn.disabled = true;
+
+            let base64Image = "";
+            if (fileInput.files.length > 0) {
+                try { base64Image = await resizeImage(fileInput.files[0]); } catch(e) { alert("อ่านไฟล์รูปไม่ได้ค่ะ"); btn.innerText = "โพสต์เลย"; btn.disabled = false; return; }
+            }
+
+            try {
+                let res = await fetch(SCRIPT_URL, { redirect: "follow", method: 'POST', body: JSON.stringify({ action: 'createPost', author: currentUser||"ไม่ระบุชื่อ", itemDetail: detail, locationStart: start, locationEnd: end, weight: w, pricePerKg: r, totalPrice: t, imageBase64: base64Image }) });
+                let result = await res.json();
+                if(result.success) { document.getElementById('postModal').classList.add('hidden'); fetchPosts(); } 
+                else alert("เกิดข้อผิดพลาด: " + result.message);
+            } catch(e) { alert("เชื่อมต่อไม่สำเร็จค่ะ: " + e.message); } 
+            finally { btn.innerText = "โพสต์เลย"; btn.disabled = false; }
+        }
+
+        // --- ระบบคอมเมนต์ ---
+        function openCommentModal(postId) {
+            if(!currentUser) return alert("กรุณาเข้าสู่ระบบก่อนนะคะ");
+            document.getElementById('replyPostId').value = postId; document.getElementById('replyMessage').value = ""; document.getElementById('acceptJobCheck').checked = false; document.getElementById('commentModal').classList.remove('hidden');
+        }
+        function closeCommentModal() { document.getElementById('commentModal').classList.add('hidden'); }
+
+        async function submitComment() {
+            const postId = document.getElementById('replyPostId').value, msg = document.getElementById('replyMessage').value, isJob = document.getElementById('acceptJobCheck').checked, btn = document.getElementById('submitCommentBtn');
+            if(!msg) return alert("พิมพ์ข้อความด้วยค่ะ");
+            btn.innerText = "กำลังส่ง..."; btn.disabled = true;
+            try {
+                let res = await fetch(SCRIPT_URL, { redirect: "follow", method: 'POST', body: JSON.stringify({ action: 'addComment', postId: postId, user: currentUser, message: msg, isAcceptingJob: isJob }) });
+                let result = await res.json();
+                if(result.success) { closeCommentModal(); fetchPosts(); }
+            } catch(e) { alert("เกิดข้อผิดพลาด"); } 
+            finally { btn.innerText = "ส่งข้อความตอบกลับ"; btn.disabled = false; }
+        }
+
+        // --- ระบบลบโพสต์ ---
+        async function deletePost(postId) {
+            if(!confirm("คุณต้องการลบกระทู้นี้ใช่หรือไม่? (ไม่สามารถกู้คืนได้)")) return;
+            try {
+                let res = await fetch(SCRIPT_URL, { redirect: "follow", method: 'POST', body: JSON.stringify({ action: 'deletePost', postId: postId, user: currentUser }) });
+                let result = await res.json();
+                if(result.success) { fetchPosts(); } else { alert(result.message); }
+            } catch(e) { alert("เกิดข้อผิดพลาดในการลบโพสต์"); }
+        }
+
+        // --- ระบบรีวิว ---
+        function openReviewModal(postId) {
+            if(!currentUser) return alert("กรุณาเข้าสู่ระบบก่อนรีวิวนะคะ");
+            document.getElementById('reviewPostId').value = postId;
+            document.getElementById('reviewMessage').value = "";
+            setRating(5); // ค่าเริ่มต้น 5 ดาว
+            document.getElementById('reviewModal').classList.remove('hidden');
+        }
+        function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); }
+
+        function setRating(val) {
+            document.getElementById('reviewRatingScore').value = val;
+            const stars = document.querySelectorAll('#starSelector i');
+            stars.forEach(s => {
+                if(parseInt(s.getAttribute('data-val')) <= val) s.classList.add('active');
+                else s.classList.remove('active');
+            });
+        }
+
+        async function submitReview() {
+            const postId = document.getElementById('reviewPostId').value, msg = document.getElementById('reviewMessage').value, rating = document.getElementById('reviewRatingScore').value, btn = document.getElementById('submitReviewBtn');
+            btn.innerText = "กำลังส่งรีวิว..."; btn.disabled = true;
+            try {
+                let res = await fetch(SCRIPT_URL, { redirect: "follow", method: 'POST', body: JSON.stringify({ action: 'addReview', postId: postId, user: currentUser, rating: rating, message: msg }) });
+                let result = await res.json();
+                if(result.success) { closeReviewModal(); fetchPosts(); alert("ขอบคุณสำหรับรีวิวค่ะ! ⭐"); }
+            } catch(e) { alert("เกิดข้อผิดพลาด"); } 
+            finally { btn.innerText = "ส่งรีวิว"; btn.disabled = false; }
+        }
+
+        function getStarsHTML(rating) {
+            let html = '';
+            for(let i=1; i<=5; i++) {
+                if(i <= rating) html += '<i class="fa-solid fa-star text-yellow-400"></i>';
+                else html += '<i class="fa-regular fa-star text-gray-300"></i>';
+            }
+            return html;
+        }
+
+        // --- ระบบดึงข้อมูล ---
+        async function fetchPosts() {
+            const container = document.getElementById('feedContainer');
+            container.innerHTML = '<p class="text-center text-pink-400 py-10"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br>กำลังโหลดข้อมูลน่ารักๆ...</p>';
+            try {
+                let res = await fetch(SCRIPT_URL, { redirect: "follow" });
+                let result = await res.json();
+                if (result.success) {
+                    container.innerHTML = '';
+                    if(result.data.length === 0) return container.innerHTML = '<p class="text-center text-gray-400 py-10 bg-white rounded-2xl">ยังไม่มีกระทู้หิ้วของค่ะ 🐷</p>';
+
+                    result.data.forEach(post => {
+                        let imgTag = (post.image_url && post.image_url.startsWith('data:image')) ? `<img src="${post.image_url}" class="w-full h-56 object-contain bg-pink-50 rounded-xl mt-4 border border-pink-100 shadow-sm">` : '';
+                        
+                        // สร้าง HTML คอมเมนต์
+                        let commentsHTML = '';
+                        if(post.comments && post.comments.length > 0) {
+                            commentsHTML = `<div class="mt-4 pt-4 border-t border-gray-100 space-y-2">`;
+                            post.comments.forEach(c => { commentsHTML += `<div class="bg-pink-50 p-3 rounded-xl text-sm flex flex-col"><div class="font-bold text-pink-600 mb-1"><i class="fa-regular fa-comment"></i> ${c.user} <span class="text-[10px] text-gray-400 ml-2">${c.timestamp}</span></div><div class="text-gray-700 pl-4">${c.message}</div></div>`; });
+                            commentsHTML += `</div>`;
+                        }
+
+                        // สร้าง HTML รีวิว
+                        let reviewsHTML = '';
+                        if(post.reviews && post.reviews.length > 0) {
+                            reviewsHTML = `<div class="mt-4 pt-4 border-t border-gray-100 space-y-3"><h4 class="text-sm font-bold text-gray-700">⭐ รีวิวคนรับหิ้วโพสต์นี้</h4>`;
+                            post.reviews.forEach(r => {
+                                reviewsHTML += `
+                                    <div class="bg-yellow-50 p-3 rounded-xl text-sm border border-yellow-100">
+                                        <div class="flex justify-between items-center mb-1">
+                                            <div class="font-bold text-yellow-700">${r.user}</div>
+                                            <div class="text-xs tracking-widest">${getStarsHTML(r.rating)}</div>
+                                        </div>
+                                        <div class="text-gray-700 italic">"${r.message}"</div>
+                                        <div class="text-[10px] text-gray-400 text-right mt-1">${r.timestamp}</div>
+                                    </div>
+                                `;
+                            });
+                            reviewsHTML += `</div>`;
+                        }
+
+                        let statusColor = post.status === "มีคนรับคิวแล้ว" ? "bg-green-100 text-green-700 border-green-200" : "bg-yellow-50 text-yellow-600 border-yellow-200";
+                        let assigneeHTML = post.assignee ? `<div class="text-xs text-green-600 font-bold mt-1 text-right">🛵 คนรับหิ้ว: ${post.assignee}</div>` : '';
+
+                        // เช็กว่าเป็นเจ้าของโพสต์ไหม เพื่อแสดงปุ่มลบ
+                        let deleteBtnHTML = (currentUser && currentUser === post.author) ? `<button onclick="deletePost('${post.post_id}')" class="text-red-400 hover:text-red-600 text-xs ml-3" title="ลบกระทู้"><i class="fa-solid fa-trash-can"></i></button>` : '';
+
+                        // ถ้ามีคนรับคิวแล้ว ถึงจะโชว์ปุ่มรีวิว
+                        let reviewBtnHTML = post.status === "มีคนรับคิวแล้ว" ? `<button class="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-bold hover:bg-yellow-200 shadow-sm ml-2" onclick="openReviewModal('${post.post_id}')"><i class="fa-solid fa-star"></i> รีวิว</button>` : '';
+
+                        let cardHTML = `
+                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-pink-50 relative overflow-hidden mb-6">
+                            <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-pink-300"></div>
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 font-bold">${post.author.charAt(0)}</div>
+                                        <div>
+                                            <h4 class="font-bold text-gray-800 text-sm flex items-center">${post.author} ${deleteBtnHTML}</h4>
+                                            <p class="text-[11px] text-gray-400">${post.timestamp}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end"><span class="${statusColor} text-[11px] font-bold px-3 py-1 rounded-full border">${post.status}</span>${assigneeHTML}</div>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mt-2 flex items-start gap-2"><span class="text-pink-400 mt-1"><i class="fa-solid fa-thumbtack"></i></span> ${post.item_detail}</h3>
+                            ${imgTag}
+                            <div class="mt-4 bg-[#fffaf5] p-4 rounded-2xl border border-orange-50 space-y-2">
+                                <div class="flex items-center gap-2 text-sm text-gray-600"><i class="fa-solid fa-map-pin text-pink-400 w-4"></i> <b>รับของ:</b> ${post.location_start}</div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600"><i class="fa-solid fa-house-chimney text-orange-400 w-4"></i> <b>ส่งของ:</b> ${post.location_end}</div>
+                                <div class="flex items-center gap-2 text-sm text-gray-600"><i class="fa-solid fa-ruler text-blue-400 w-4"></i> <b>ระยะ/น้ำหนัก:</b> ${post.weight} | <i class="fa-solid fa-tag text-green-400 w-4"></i> <b>เรต:</b> ${post.price_per_kg} ฿</div>
+                            </div>
+                            <div class="mt-4 flex justify-between items-center px-1">
+                                <div class="text-pink-600 font-bold"><span class="text-xs text-gray-500 font-normal">ค่าส่งสุทธิ</span><br><span class="text-xl">${post.total_price} บาท</span></div>
+                                <div class="flex">
+                                    <button class="bg-pink-100 text-pink-700 px-4 py-2 rounded-full text-sm font-bold hover:bg-pink-200 shadow-sm" onclick="openCommentModal('${post.post_id}')">💬 ตอบกลับ</button>
+                                    ${reviewBtnHTML}
+                                </div>
+                            </div>
+                            ${commentsHTML}
+                            ${reviewsHTML}
+                        </div>`;
+                        container.innerHTML += cardHTML;
+                    });
+                }
+            } catch (error) { container.innerHTML = '<p class="text-center text-red-400 py-10">โหลดไม่สำเร็จ ลองรีเฟรชอีกครั้งนะคะ 🥺</p>'; }
+        }
+    </script>
+</body>
+</html>
