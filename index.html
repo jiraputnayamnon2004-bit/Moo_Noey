@@ -141,9 +141,9 @@
 
     <script>
         // ==========================================
-        // ใส่ URL ของ Google Apps Script ที่เพิ่ง Deploy ใหม่ตรงนี้ !!
+        // ใส่ URL ของ Google Apps Script ล่าสุดตรงนี้
         // ==========================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxrCYXLb2pBcHoDTVntmxY2ovZQSfl1vU0N46vuQkcJwMpg_DqTcV8f42RawrlYqw8j/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwbuVyNfJsJt2iHAzT92GaH0O4jUp6PHQLM5cNkyzR1dKTT65IvsLWaBbMsfv_qIvrg/exec';
 
         let currentUser = localStorage.getItem('displayName');
         if (currentUser) showLoggedInState();
@@ -170,7 +170,7 @@
             localStorage.removeItem('displayName'); localStorage.removeItem('username');
             currentUser = null;
             document.getElementById('authSection').classList.remove('hidden'); document.getElementById('userSection').classList.add('hidden');
-            fetchPosts(); // รีเฟรชหน้าเพื่ออัปเดตปุ่มลบโพสต์
+            fetchPosts(); 
         }
 
         async function handleAuth(action) {
@@ -202,14 +202,14 @@
                     img.src = event.target.result;
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        let maxWidth = 400, maxHeight = 400; 
+                        let maxWidth = 300, maxHeight = 300; 
                         let width = img.width, height = img.height;
                         if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } } 
                         else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
                         canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.4)); 
+                        resolve(canvas.toDataURL('image/jpeg', 0.3)); 
                     };
                     img.onerror = reject;
                 };
@@ -230,7 +230,7 @@
             try {
                 let res = await fetch(SCRIPT_URL, { redirect: "follow", method: 'POST', body: JSON.stringify({ action: 'createPost', author: currentUser||"ไม่ระบุชื่อ", itemDetail: detail, locationStart: start, locationEnd: end, weight: w, pricePerKg: r, totalPrice: t, imageBase64: base64Image }) });
                 let result = await res.json();
-                if(result.success) { document.getElementById('postModal').classList.add('hidden'); fetchPosts(); } 
+                if(result.success) { document.getElementById('postModal').classList.add('hidden'); document.getElementById('postDetail').value = ""; document.getElementById('postStart').value = ""; document.getElementById('postEnd').value = ""; fileInput.value = ""; fetchPosts(); } 
                 else alert("เกิดข้อผิดพลาด: " + result.message);
             } catch(e) { alert("เชื่อมต่อไม่สำเร็จค่ะ: " + e.message); } 
             finally { btn.innerText = "โพสต์เลย"; btn.disabled = false; }
@@ -270,7 +270,7 @@
             if(!currentUser) return alert("กรุณาเข้าสู่ระบบก่อนรีวิวนะคะ");
             document.getElementById('reviewPostId').value = postId;
             document.getElementById('reviewMessage').value = "";
-            setRating(5); // ค่าเริ่มต้น 5 ดาว
+            setRating(5); 
             document.getElementById('reviewModal').classList.remove('hidden');
         }
         function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); }
@@ -316,7 +316,7 @@
                     if(result.data.length === 0) return container.innerHTML = '<p class="text-center text-gray-400 py-10 bg-white rounded-2xl">ยังไม่มีกระทู้หิ้วของค่ะ 🐷</p>';
 
                     result.data.forEach(post => {
-                        let imgTag = post.image_url ? `<img src="${post.image_url}" class="w-full h-56 object-contain bg-pink-50 rounded-xl mt-4 border border-pink-100 shadow-sm">` : '';
+                        let imgTag = (post.image_url && post.image_url.startsWith('data:image')) ? `<img src="${post.image_url}" class="w-full h-56 object-contain bg-pink-50 rounded-xl mt-4 border border-pink-100 shadow-sm">` : '';
                         
                         // สร้าง HTML คอมเมนต์
                         let commentsHTML = '';
