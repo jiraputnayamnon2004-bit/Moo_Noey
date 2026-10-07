@@ -316,7 +316,7 @@
                     if(result.data.length === 0) return container.innerHTML = '<p class="text-center text-gray-400 py-10 bg-white rounded-2xl">ยังไม่มีกระทู้หิ้วของค่ะ 🐷</p>';
 
                     result.data.forEach(post => {
-                        let imgTag = (post.image_url && post.image_url.includes('drive.google.com')) ? `<img src="${post.image_url}" class="w-full h-56 object-contain bg-pink-50 rounded-xl mt-4 border border-pink-100 shadow-sm">` : '';
+                        let imgTag = post.image_url ? `<img src="${post.image_url}" class="w-full h-56 object-contain bg-pink-50 rounded-xl mt-4 border border-pink-100 shadow-sm">` : '';
                         
                         // สร้าง HTML คอมเมนต์
                         let commentsHTML = '';
