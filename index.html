@@ -143,7 +143,7 @@
         // ==========================================
         // ใส่ URL ของ Google Apps Script ที่เพิ่ง Deploy ใหม่ตรงนี้ !!
         // ==========================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwi2pb0GxYVan_BetCtXHRYE95AyAe7ltmOn6bY2H5Y9RbRlXnHDuXXrEKv3ShPpx1X_g/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaT58donFsNNH5JPSOAOeG2JrTD5hFfFlx5P6IwciJpAK1mJ37UYgNCgKu_MYgciv8mw/exec';
 
         let currentUser = localStorage.getItem('displayName');
         if (currentUser) showLoggedInState();
@@ -316,7 +316,7 @@
                     if(result.data.length === 0) return container.innerHTML = '<p class="text-center text-gray-400 py-10 bg-white rounded-2xl">ยังไม่มีกระทู้หิ้วของค่ะ 🐷</p>';
 
                     result.data.forEach(post => {
-                        let imgTag = (post.image_url && post.image_url.startsWith('data:image')) ? `<img src="${post.image_url}" class="w-full h-56 object-contain bg-pink-50 rounded-xl mt-4 border border-pink-100 shadow-sm">` : '';
+                        let imgTag = (post.image_url && post.image_url.includes('drive.google.com')) ? `<img src="${post.image_url}" class="w-full h-56 object-contain bg-pink-50 rounded-xl mt-4 border border-pink-100 shadow-sm">` : '';
                         
                         // สร้าง HTML คอมเมนต์
                         let commentsHTML = '';
